@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import matrix_power as mat_pow
 
+import tqdm
+import logging
+logging.basicConfig(level=logging.INFO)
+
 from .edge import Edge
 from .node import Node
 from .utils import HDFMixin, change_base, draw_diagnose_times
@@ -521,12 +525,15 @@ class Unilateral(HDFMixin):
         shape = (len(self.state_list), len(table))
         self._diagnose_matrices[t_stage] = np.ones(shape=shape)
 
+        print(f"Loading patients of {t_stage} T-stage")
+        t = tqdm.tqdm(total=len(self.state_list) * len(table))
         for i,state in enumerate(self.state_list):
             self.state = state
 
             for j, (_, patient) in enumerate(table.iterrows()):
                 patient_obs_prob = self.comp_diagnose_prob(patient)
                 self._diagnose_matrices[t_stage][i,j] = patient_obs_prob
+                t.update()
 
 
     @property
